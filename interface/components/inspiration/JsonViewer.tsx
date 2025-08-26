@@ -1,408 +1,205 @@
-// JsonViewer.tsx
 import React, { useState } from "react";
 import Link from "next/link";
-import { FaCheck } from "react-icons/fa";
+import { Check, ChevronRight, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 
-// JsonViewer 主组件
-const JsonViewer = ({ 
-  jsonData, 
+interface JsonViewerProps {
+  jsonData: any;
+  isSelectable?: boolean;
+  isSelected?: boolean;
+  onSelect?: () => void;
+}
+
+const JsonViewer = ({
+  jsonData,
   isSelectable = false,
   isSelected = false,
-  onSelect = () => {}
-}: { 
-  jsonData: any, 
-  isSelectable?: boolean,
-  isSelected?: boolean,
-  onSelect?: () => void 
-}) => {
+  onSelect = () => { }
+}: JsonViewerProps) => {
   const solutionData = jsonData.solution;
   const id = jsonData._id;
 
   if (!solutionData) {
-    return <div> No solution data available. </div>;
+    return (
+      <div className="card p-3 text-center">
+        <p className="body-small text-text-tertiary">No data available</p>
+      </div>
+    );
   }
 
   return (
-    <div
-      className="bg-primary/80 border border-border-secondary p-4 
-        w-full mx-auto rounded-2xl overflow-hidden"
-      style={{ maxWidth: "1000px", fontFamily: "Arial, sans-serif" }}
+    <motion.div
+      className={`card p-4 transition-all duration-200 ${isSelected ? 'ring-2 ring-organic-sage bg-organic-sage/5' : ''
+        }`}
+      whileHover={{ scale: 1.01 }}
     >
-      <div>
-        {Object.keys(solutionData).map((subKey) => {
-          // 隐藏 image_url 和 image_name
-          if (subKey === "image_url" || subKey === "image_name") {
+      {/* Title with selection */}
+      {solutionData.Title && (
+        <div className="flex items-center gap-2 mb-3">
+          {isSelectable && (
+            <motion.button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect();
+              }}
+              className={`flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center
+                transition-all duration-150 ${isSelected
+                  ? 'border-organic-sage bg-organic-sage text-text-inverse'
+                  : 'border-border-default hover:border-organic-sage'
+                }`}
+              whileTap={{ scale: 0.9 }}
+            >
+              <motion.div
+                animate={{ opacity: isSelected ? 1 : 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Check className="w-2.5 h-2.5" />
+              </motion.div>
+            </motion.button>
+          )}
+          <Link
+            href={`/inspiration/${id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent-primary hover:text-accent-primary/80 
+                     transition-colors duration-150 text-base font-medium flex items-center gap-1"
+          >
+            {solutionData.Title}
+            <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
+      )}
+
+      {/* Content in compact grid */}
+      <div className="space-y-2 text-sm">
+        {Object.keys(solutionData).map((key) => {
+          // Skip handled or hidden fields
+          if (key === "Title" || key === "image_url" || key === "image_name" ||
+            key === "Technical Method" || key === "Possible Results") {
             return null;
           }
 
-          // 特殊处理 Title，添加选择按钮
-          if (subKey === "Title") {
-            return (
-              <div key={subKey} className="flex items-center gap-2">
-                {isSelectable && (
-                  <motion.button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelect();
-                    }}
-                    className={`w-4 h-4 rounded-full flex items-center justify-center
-                      border-2 ${
-                        isSelected 
-                          ? 'border-green-500 bg-green-500 text-white' 
-                          : 'border-text-secondary bg-transparent hover:border-green-500 hover:bg-secondary/30'
-                      }`}
-                    title="Click to select"
-                    whileTap={{ scale: 0.95 }}
-                    animate={{
-                      scale: isSelected ? 1.15 : 1,
-                      transition: { type: "spring", stiffness: 400, damping: 25 }
-                    }}
-                  >
-                    <motion.div
-                      initial={false}
-                      animate={{
-                        scale: isSelected ? 1 : 0.5,
-                        opacity: isSelected ? 1 : 0,
-                        rotate: isSelected ? 0 : -90,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30,
-                        mass: 1
-                      }}
-                    >
-                      <FaCheck className="text-base" />
-                    </motion.div>
-                  </motion.button>
-                )}
-                <Link
-                  href={`/inspiration/${id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-blue-500 whitespace-nowrap no-underline hover:text-blue-700 
-                      transition-colors duration-200 text-base"
-                >
-                  {solutionData[subKey]}:
-                </Link>
-              </div>
-            );
-          }
-
-          // 特殊处理 "Technical Method" 和 "Possible Results"
-          if (subKey === "Technical Method" || subKey === "Possible Results") {
-            if (subKey === "Technical Method") {
-              return (
-                <TechnicalMethodSection
-                  key="TechnicalMethod"
-                  technicalMethod={solutionData["Technical Method"]}
-                  possibleResults={solutionData["Possible Results"]}
-                />
-              );
-            } else {
-              return null;
-            }
-          }
-
-          return <JsonNode key={subKey} keyName={subKey} value={solutionData[subKey]} />;
+          return <CompactField key={key} label={key} value={solutionData[key]} />;
         })}
+
+        {/* Technical Methods - ultra compact */}
+        {solutionData["Technical Method"] && (
+          <TechnicalMethodCompact
+            technicalMethod={solutionData["Technical Method"]}
+            possibleResults={solutionData["Possible Results"]}
+          />
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// JsonNode 组件，支持展开/折叠
-const JsonNode = ({
-  keyName,
-  value,
-}: {
-  keyName: string | number;
-  value: any;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
+const CompactField = ({ label, value }: { label: string; value: any }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const isExpandable = typeof value === "object" && value !== null;
 
-  const toggleOpen = () => {
-    setIsOpen(!isOpen);
-  };
-
-  // 判断是否是 Title 键
-  const isTitle = keyName === "Title";
-
-  // 判断是否是需要隐藏的字段
-  const isHidden =
-    keyName === "image_url" || keyName === "image_name";
-
-  if (isHidden) {
-    return null;
+  if (isExpandable) {
+    return (
+      <div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-1 text-text-secondary hover:text-text-primary 
+                   transition-colors duration-150 w-full text-left"
+        >
+          <motion.div
+            animate={{ rotate: isExpanded ? 90 : 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <ChevronRight className="w-3 h-3" />
+          </motion.div>
+          <span className="font-medium text-xs uppercase tracking-wide">{label}:</span>
+        </button>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="ml-4 mt-1 text-xs text-text-tertiary"
+          >
+            {Array.isArray(value)
+              ? value.join(", ")
+              : JSON.stringify(value, null, 2)
+            }
+          </motion.div>
+        )}
+      </div>
+    );
   }
 
   return (
-    <div className="text-sm">
-      {/* 节点标题 */}
-      <div
-        onClick={isExpandable ? toggleOpen : undefined}
-        className={`flex items-center ${
-          isExpandable ? "cursor-pointer" : ""
-        }`}
-      >
-        {isExpandable && (
-          <span className="cursor-pointer mr-1 select-none text-xs">
-            {isOpen ? "▼" : "▶"}
-          </span>
-        )}
-        {/* 如果是 Title，渲染为蓝色超链接 */}
-        {isTitle ? (
-          <Link
-            href={`/solution/${encodeURIComponent(value)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-bold text-blue-500 whitespace-nowrap no-underline hover:text-blue-700 
-                transition-colors duration-200 text-base"
-          >
-            {value}:
-          </Link>
-        ) : (
-          <div className="font-bold text-text-primary whitespace-nowrap">
-            {keyName}:
-          </div>
-        )}
-
-        {/* 链接展示，仅适用于 _id 字段 */}
-        {!isExpandable && keyName === "_id" && (
-          <Link
-            href={`/inspiration/${value}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-2 text-blue-500 no-underline hover:text-blue-700 transition-colors duration-200"
-          >
-            {value}
-          </Link>
-        )}
-
-        {/* 普通值展示 */}
-        {!isExpandable && keyName !== "_id" && !isTitle && (
-          <div className="flex items-center ml-2.5">
-            <span className="text-text-secondary inline-block whitespace-nowrap 
-                overflow-hidden text-ellipsis cursor-pointer text-sm">
-              {value}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* 子节点渲染 */}
-      {isExpandable && isOpen && (
-        <div className="ml-5">
-          {Array.isArray(value)
-            ? value.map((item, index) => (
-                <JsonNode key={index} keyName={index} value={item} />
-              ))
-            : Object.keys(value).map((subKey) => {
-                // 特殊处理 "Technical Method" 节点
-                if (keyName === "Technical Method" && subKey !== "Original" && subKey !== "Iteration") {
-                  return null;
-                }
-
-                return <JsonNode key={subKey} keyName={subKey} value={value[subKey]} />;
-              })}
-        </div>
-      )}
+    <div className="flex items-start gap-2">
+      <span className="font-medium text-xs uppercase tracking-wide text-text-secondary flex-shrink-0">
+        {label}:
+      </span>
+      <span className="text-xs text-text-primary leading-relaxed">
+        {value}
+      </span>
     </div>
   );
 };
 
-// SolutionNode 组件，用于处理 solution 部分的特殊展示逻辑
-const SolutionNode = ({
-  keyName,
-  value,
-}: {
-  keyName: string | number;
-  value: any;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const isExpandable = typeof value === "object" && value !== null;
-
-  const toggleOpen = () => {
-    setIsOpen(!isOpen);
-  };
-
-  // 判断是否是需要隐藏的字段
-  const isHidden =
-    keyName === "image_url" || keyName === "image_name";
-
-  if (isHidden) {
-    return null;
-  }
-
-  return (
-    <div className="ml-5 text-sm">
-      {/* 节点标题 */}
-      <div
-        onClick={isExpandable ? toggleOpen : undefined}
-        className={`flex items-center ${
-          isExpandable ? "cursor-pointer" : ""
-        }`}
-      >
-        {isExpandable && (
-          <span className="cursor-pointer mr-1 select-none text-xs">
-            {isOpen ? "▼" : "▶"}
-          </span>
-        )}
-        <div className="font-bold text-text-primary whitespace-nowrap">
-          {keyName}:
-        </div>
-      </div>
-
-      {/* 子节点渲染 */}
-      {isExpandable && isOpen && (
-        <div className="ml-5">
-          {Object.keys(value).map((subKey) => {
-            // 隐藏 image_url 和 image_name
-            if (subKey === "image_url" || subKey === "image_name") {
-              return null;
-            }
-
-            // 特殊处理 "Technical Method" 和 "Possible Results"
-            if (subKey === "Technical Method" || subKey === "Possible Results") {
-              // 仅在处理 "Technical Method" 时合并内容
-              if (subKey === "Technical Method") {
-                return (
-                  <TechnicalMethodSection
-                    key="TechnicalMethod"
-                    technicalMethod={value["Technical Method"]}
-                    possibleResults={value["Possible Results"]}
-                  />
-                );
-              } else {
-                return null;
-              }
-            }
-
-            return <JsonNode key={subKey} keyName={subKey} value={value[subKey]} />;
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// TechnicalMethodSection 组件，用于合并 "Technical Method" 和 "Possible Results"
-const TechnicalMethodSection = ({
+const TechnicalMethodCompact = ({
   technicalMethod,
   possibleResults,
 }: {
   technicalMethod: any;
   possibleResults: any;
 }) => {
-  // 准备选项数据
-  const options: {
-    technicalMethod: string;
-    performance: string;
-    userExperience: string;
-  }[] = [];
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  // 添加 Original 选项
-  if (
-    technicalMethod?.Original &&
-    possibleResults?.Original?.Performance &&
-    possibleResults?.Original?.["User Experience"]
-  ) {
-    options.push({
-      technicalMethod: technicalMethod.Original,
-      performance: possibleResults.Original.Performance,
-      userExperience: possibleResults.Original["User Experience"],
-    });
-  }
-
-  // 添加 Iteration 选项
-  if (
-    technicalMethod?.Iteration &&
-    possibleResults?.Iteration &&
-    Array.isArray(technicalMethod.Iteration) &&
-    Array.isArray(possibleResults.Iteration)
-  ) {
-    technicalMethod.Iteration.forEach((method: string, index: number) => {
-      const result = possibleResults.Iteration[index];
-      if (result) {
-        options.push({
-          technicalMethod: method,
-          performance: result.Performance,
-          userExperience: result["User Experience"],
-        });
-      }
-    });
+  // Quick count of options
+  let optionCount = 0;
+  if (technicalMethod?.Original) optionCount++;
+  if (technicalMethod?.Iteration && Array.isArray(technicalMethod.Iteration)) {
+    optionCount += technicalMethod.Iteration.length;
   }
 
   return (
-    <div className="text-sm">
-      {/* Technical Method 标题 */}
-      <div className="flex items-center cursor-pointer" onClick={() => {}}>
-        <span className="font-bold text-text-primary">Technical Method:</span>
-      </div>
-
-      {/* 选项列表 */}
-      {options.map((option, index) => (
-        <Option
-          key={index}
-          optionNumber={index + 1}
-          technicalMethod={option.technicalMethod}
-          performance={option.performance}
-          userExperience={option.userExperience}
-        />
-      ))}
-    </div>
-  );
-};
-
-// Option 组件，用于展示每个选项的详细内容
-const Option = ({
-  optionNumber,
-  technicalMethod,
-  performance,
-  userExperience,
-}: {
-  optionNumber: number;
-  technicalMethod: string;
-  performance: string;
-  userExperience: string;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleOpen = () => {
-    setIsOpen(!isOpen);
-  };
-
-  return (
-    <div className="ml-5">
-      <div
-        onClick={toggleOpen}
-        className="flex items-center cursor-pointer"
-        aria-expanded={isOpen}
+    <div className="border-t border-border-subtle pt-2 mt-2">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between w-full text-left 
+                 hover:bg-surface-secondary rounded px-2 py-1 -mx-2
+                 transition-colors duration-150"
       >
-        <span className="cursor-pointer mr-1 select-none text-xs">
-          {isOpen ? "▼" : "▶"}
+        <span className="font-medium text-xs uppercase tracking-wide text-text-secondary">
+          Technical Methods ({optionCount})
         </span>
-        <div className="font-bold text-text-primary whitespace-nowrap">
-          Option {optionNumber}:
-        </div>
-      </div>
-      {isOpen && (
-        <div className="ml-5 mt-2">
-          <div className="flex items-start mb-2">
-            {/* <span className="font-bold text-text-primary">Technical Method: </span> */}
-            <span>{technicalMethod}</span>
-          </div>
-          <div className="flex items-start mb-2">
-            <span className="font-bold text-text-primary">Performance: </span>
-            <span className="ml-2">{performance}</span>
-          </div>
-          <div className="flex items-start">
-            <span className="font-bold text-text-primary">User Experience: </span>
-            <span className="ml-2">{userExperience}</span>
-          </div>
-        </div>
+        <motion.div
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <ChevronRight className="w-3 h-3 text-text-tertiary" />
+        </motion.div>
+      </button>
+
+      {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mt-2 space-y-1"
+        >
+          {/* Original method */}
+          {technicalMethod?.Original && (
+            <div className="text-xs bg-surface-secondary rounded px-2 py-1">
+              <div className="font-medium text-text-primary mb-1">Original:</div>
+              <div className="text-text-secondary">{technicalMethod.Original}</div>
+            </div>
+          )}
+
+          {/* Iteration methods */}
+          {technicalMethod?.Iteration && Array.isArray(technicalMethod.Iteration) &&
+            technicalMethod.Iteration.map((method: string, index: number) => (
+              <div key={index} className="text-xs bg-surface-secondary rounded px-2 py-1">
+                <div className="font-medium text-text-primary mb-1">Option {index + 2}:</div>
+                <div className="text-text-secondary">{method}</div>
+              </div>
+            ))}
+        </motion.div>
       )}
     </div>
   );

@@ -84,7 +84,7 @@ const MiniCard = React.memo(function MiniCard(props: { content: any, index: numb
             href={`/inspiration/${props.content.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group block mb-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            className="group block mb-6 transition-all duration-300 hover:-translate-y-1"
             aria-label={`View solution ${title}`}
         >
             <article className={`

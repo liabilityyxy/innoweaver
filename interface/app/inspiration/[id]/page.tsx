@@ -688,7 +688,7 @@ const Inspiration = () => {
             </SectionErrorBoundary>
 
             {/* Chat button */}
-            <button
+            {/* <button
                 className="fixed bottom-8 right-8 bg-accent-primary hover:bg-accent-primary/90 
                          text-text-inverse p-4 rounded-2xl shadow-lg 
                          hover:shadow-xl transition-all duration-200 z-50"
@@ -708,7 +708,7 @@ const Inspiration = () => {
                         solution={solution}
                     />
                 )}
-            </SectionErrorBoundary>
+            </SectionErrorBoundary> */}
         </div>
     );
 };

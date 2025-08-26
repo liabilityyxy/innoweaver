@@ -184,15 +184,15 @@ const ChatPopup = ({ isOpen, onClose, onMinimize, inspirationId, solution }: Cha
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className={`fixed right-12 bottom-24 w-[450px] bg-secondary rounded-lg shadow-lg z-50 overflow-hidden`}
+                    className={`fixed right-12 bottom-24 w-[450px] bg-surface-secondary rounded-lg shadow-lg z-50 overflow-hidden`}
                     style={{ height: '500px' }}
                 >
                     {/* Header */}
-                    <div className="flex justify-between items-center p-4 bg-primary">
+                    <div className="flex justify-between items-center p-4 bg-surface-tertiary">
                         <div className="flex items-center gap-2">
                             <h3 className="text-text-primary font-semibold">Chat with AI</h3>
                             {isLoading && (
-                                <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                                <div className="w-4 h-4 rounded-full border-2 border-accent-primary border-t-surface-primary animate-spin" />
                             )}
                         </div>
                         <div className="flex gap-2">
@@ -203,11 +203,11 @@ const ChatPopup = ({ isOpen, onClose, onMinimize, inspirationId, solution }: Cha
                     </div>
 
                     {/* Messages List */}
-                    <div className="h-96 overflow-y-auto p-4 space-y-4 bg-primary">
+                    <div className="h-96 overflow-y-auto p-4 space-y-4 bg-surface-primary">
                         {messages.map((message, index) => (
                             <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className="flex flex-col max-w-[80%] gap-1">
-                                    <div className={`p-3 rounded-lg shadow-sm ${message.type === 'user' ? 'bg-primary text-text-primary border border-border-secondary' : 'bg-secondary text-text-primary'} ${message.status === 'error' ? 'opacity-50' : ''}`}>
+                                    <div className={`p-3 rounded-lg shadow-sm ${message.type === 'user' ? 'bg-surface-elevated text-text-primary border border-border-secondary' : 'bg-surface-secondary text-text-primary'} ${message.status === 'error' ? 'opacity-50' : ''}`}>
                                         {message.content}
                                     </div>
                                     <div className={`text-xs text-text-secondary ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
@@ -221,7 +221,7 @@ const ChatPopup = ({ isOpen, onClose, onMinimize, inspirationId, solution }: Cha
                         {streamingContent && (
                             <div className="flex justify-start">
                                 <div className="flex flex-col max-w-[80%] gap-1">
-                                    <div className="p-3 rounded-lg shadow-sm bg-secondary text-text-primary">
+                                    <div className="p-3 rounded-lg shadow-sm bg-surface-secondary text-text-primary">
                                         {streamingContent}
                                     </div>
                                     <div className="text-xs text-text-secondary text-left">
@@ -234,7 +234,7 @@ const ChatPopup = ({ isOpen, onClose, onMinimize, inspirationId, solution }: Cha
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-4 border-t border-border bg-secondary">
+                    <div className="p-4 border-t border-border bg-surface-secondary">
                         <div className="flex gap-2">
                             <input
                                 type="text"
@@ -243,7 +243,7 @@ const ChatPopup = ({ isOpen, onClose, onMinimize, inspirationId, solution }: Cha
                                 onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSendMessage()}
                                 placeholder="Type your message..."
                                 disabled={isLoading}
-                                className="flex-1 p-2 rounded-lg bg-primary text-text-primary border border-border focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 placeholder:text-text-secondary"
+                                className="flex-1 p-2 rounded-lg bg-surface-primary text-text-primary border border-border focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 placeholder:text-text-secondary"
                             />
 
                             {/* --- MODIFIED BUTTON --- */}
@@ -251,7 +251,7 @@ const ChatPopup = ({ isOpen, onClose, onMinimize, inspirationId, solution }: Cha
                             {isLoading ? (
                                 <button
                                     onClick={handleStopStreaming}
-                                    className="p-3 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/30 transition-colors"
+                                    className="p-3 bg-error text-text-inverse rounded-lg hover:bg-error/90 transition-colors"
                                     title="Stop generation"
                                 >
                                     <FaStop className="w-4 h-4" />
@@ -259,7 +259,7 @@ const ChatPopup = ({ isOpen, onClose, onMinimize, inspirationId, solution }: Cha
                             ) : (
                                 <button
                                     onClick={handleSendMessage}
-                                    className="p-3 bg-primary text-text-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-3 bg-accent-primary text-text-inverse rounded-lg hover:bg-accent-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={!inputMessage.trim()}
                                     title="Send message"
                                 >
