@@ -146,7 +146,7 @@ class RateLimiter:
     
     async def async_check_rate_limit(self, request: Request, user_id: Optional[str] = None) -> Dict[str, Any]:
         """
-                Check if request exceeds limit (asynchronous version)
+        Check if request exceeds limit (asynchronous version)
 
         Parameters:
             request: FastAPI request object

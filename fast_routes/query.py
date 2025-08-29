@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Body, Request
 from typing import Dict, Any, List
 from utils.auth_utils import fastapi_token_required
 import utils.tasks as USER
-from utils.redis import async_redis
+# from utils.redis import async_redis
 from pydantic import BaseModel
 from .utils import route_handler
 import json
@@ -12,19 +12,19 @@ query_router = APIRouter()
 @query_router.get("/query_solution")
 @route_handler()
 async def query_solution(id: str = Query(default="1")):
-    cache_key = f"solution:{id}"
-    cached_result = await async_redis.get(cache_key)
-    if cached_result:
-        return cached_result
-    
+    # cache_key = f"solution:{id}"
+    # cached_result = await async_redis.get(cache_key)
+    # if cached_result:
+    #     return cached_result
+
     try:
         result = await USER.query_solution(id)
     except Exception as e:
         print(f"Query failed: {e}")
-    try:
-        await async_redis.setex(cache_key, 3600, json.dumps(result))
-    except Exception as e:
-        print(f"Cache write failed: {e}")
+    # try:
+    #     await async_redis.setex(cache_key, 3600, json.dumps(result))
+    # except Exception as e:
+    #     print(f"Cache write failed: {e}")
     return result
 
 # @query_router.get("/query_paper")

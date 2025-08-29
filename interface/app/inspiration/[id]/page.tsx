@@ -84,6 +84,78 @@ const SectionHeader = memo(({ title, accent = 'clay' }: {
 });
 SectionHeader.displayName = 'SectionHeader';
 
+// Normalize varied data shapes into a consistent structure
+const toArray = (input: any) => Array.isArray(input) ? input : (input == null ? [] : [input]);
+
+const pickResultFields = (res: any) => {
+    const performance = res?.Performance ?? res?.['Task Performance'] ?? res?.performance ?? '';
+    const userExperience = res?.['User Experience'] ?? res?.UX ?? res?.experience ?? '';
+    return { performance, userExperience };
+};
+
+const extractMethod = (entry: any, fallbackTitle: string) => {
+    if (typeof entry === 'string') {
+        return { title: fallbackTitle, description: entry };
+    }
+    if (entry && typeof entry === 'object') {
+        const title = entry['Method Name'] ?? entry.Name ?? entry.title ?? fallbackTitle;
+        const description = entry.Description ?? entry['Method'] ?? entry.desc ?? entry.content ?? '';
+        return { title, description };
+    }
+    return { title: fallbackTitle, description: '' };
+};
+
+const normalizeMethods = (solution: any) => {
+    const tech = solution?.solution?.['Technical Method'];
+    if (!tech) return [] as Array<{ id: string; title: string; method: string; performance?: string; userExperience?: string; index: number; }>;
+
+    const originals = toArray(tech.Original);
+    const iterations = toArray(tech.Iteration);
+
+    const originalResultsRaw = solution?.solution?.['Possible Results']?.Original;
+    const iterationResultsRaw = solution?.solution?.['Possible Results']?.Iteration;
+
+    const getResultAt = (raw: any, idx: number) => {
+        const picked = Array.isArray(raw) ? raw[idx] : raw;
+        return pickResultFields(picked ?? {});
+    };
+
+    const items: Array<{ id: string; title: string; method: string; performance?: string; userExperience?: string; index: number; }> = [];
+    let methodIndex = 1;
+
+    // Originals
+    originals.forEach((entry: any, i: number) => {
+        const { title, description } = extractMethod(entry, `Method ${methodIndex}`);
+        const { performance, userExperience } = getResultAt(originalResultsRaw, i);
+        items.push({
+            id: `Method${methodIndex}`,
+            title,
+            method: description,
+            performance,
+            userExperience,
+            index: methodIndex - 1,
+        });
+        methodIndex++;
+    });
+
+    // Iterations
+    iterations.forEach((entry: any, i: number) => {
+        const { title, description } = extractMethod(entry, `Method ${methodIndex}`);
+        const { performance, userExperience } = getResultAt(iterationResultsRaw, i);
+        items.push({
+            id: `Method${methodIndex}`,
+            title,
+            method: description,
+            performance,
+            userExperience,
+            index: methodIndex - 1,
+        });
+        methodIndex++;
+    });
+
+    return items;
+};
+
 // Reimagined method section with organic design
 const MethodSection = memo(({
     title,
@@ -395,7 +467,7 @@ const useSolutionData = (id: string) => {
             fetchAttempted.current = false;
             fetchSolutionData();
         }
-    }, [id, fetchSolutionData]);
+    }, [id]);
 
     const refetch = useCallback(() => {
         fetchAttempted.current = false;
@@ -408,10 +480,13 @@ const useSolutionData = (id: string) => {
 const useLikeStatus = (id: string, email: string) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
+    const fetchAttempted = useRef(false);
 
     useEffect(() => {
         const initializeLikeStatus = async () => {
-            if (!email || !id) return;
+            if (!email || !id || fetchAttempted.current) return;
+
+            fetchAttempted.current = true;
             try {
                 const [likedStatuses, count] = await Promise.all([
                     fetchQueryLikedSolutions([id]),
@@ -427,6 +502,8 @@ const useLikeStatus = (id: string, email: string) => {
                 console.error("Failed to fetch like status:", error);
             }
         };
+
+        fetchAttempted.current = false;
         initializeLikeStatus();
     }, [id, email]);
 
@@ -444,31 +521,10 @@ const Inspiration = () => {
     const { solution, loading, error, refetch } = useSolutionData(id as string);
     const { isLiked, setIsLiked, likeCount, setLikeCount } = useLikeStatus(id as string, authStore.email);
 
-    // Initialize expanded sections
+    // Keep all methods collapsed by default
     useEffect(() => {
-        if (solution && expandedSections.length === 0) {
-            try {
-                const techMethod = solution?.solution?.["Technical Method"];
-                const defaultExpanded = [];
-
-                if (techMethod?.Original) {
-                    defaultExpanded.push("Method1");
-                }
-
-                const iterations = techMethod?.Iteration;
-                if (Array.isArray(iterations)) {
-                    iterations.forEach((_, index) => {
-                        defaultExpanded.push(`Method${index + 2}`); // Method2, Method3, etc.
-                    });
-                }
-
-                setExpandedSections(defaultExpanded.length > 0 ? defaultExpanded : ["Method1"]);
-            } catch (err) {
-                logger.error("Error initializing expanded sections:", err);
-                setExpandedSections(["Method1"]);
-            }
-        }
-    }, [solution, expandedSections.length]);
+        // intentionally no auto-expansion
+    }, [solution?.solution]);
 
     const handleLiked = useCallback(async () => {
         if (!authStore.email) {
@@ -497,51 +553,14 @@ const Inspiration = () => {
         );
     }, []);
 
+    const normalizedMethods = useMemo(() => normalizeMethods(solution), [solution?.solution]);
+
     const technicalMethodsSection = useMemo(() => {
         try {
-            const techMethod = solution?.solution?.["Technical Method"];
-            if (!techMethod) return null;
-
-            const originalMethod = techMethod.Original;
-            const originalResults = solution.solution["Possible Results"]?.Original;
-            const iterations = techMethod.Iteration || [];
-            const iterationResults = solution.solution["Possible Results"]?.Iteration || [];
-
-            const allMethods = [];
-            let methodIndex = 1;
-
-            // Add original method as Method 1
-            if (originalMethod) {
-                allMethods.push({
-                    id: `Method${methodIndex}`,
-                    title: `Method ${methodIndex}`,
-                    method: originalMethod,
-                    performance: originalResults?.Performance,
-                    userExperience: originalResults?.["User Experience"],
-                    index: methodIndex - 1
-                });
-                methodIndex++;
-            }
-
-            // Add iterations as Method 2, 3, etc.
-            if (Array.isArray(iterations)) {
-                iterations.forEach((iteration: string, index: number) => {
-                    const result = iterationResults[index];
-                    allMethods.push({
-                        id: `Method${methodIndex}`,
-                        title: `Method ${methodIndex}`,
-                        method: iteration,
-                        performance: result?.Performance,
-                        userExperience: result?.["User Experience"],
-                        index: methodIndex - 1
-                    });
-                    methodIndex++;
-                });
-            }
-
+            if (!normalizedMethods || normalizedMethods.length === 0) return null;
             return (
                 <div className="space-y-4">
-                    {allMethods.map((methodData) => (
+                    {normalizedMethods.map((methodData) => (
                         <MethodSection
                             key={methodData.id}
                             title={methodData.title}
@@ -559,7 +578,7 @@ const Inspiration = () => {
             logger.error("Error rendering technical methods:", err);
             return <p className="text-error">Could not display technical methods.</p>;
         }
-    }, [solution, expandedSections, toggleSection]);
+    }, [normalizedMethods, expandedSections, toggleSection]);
 
     const { title, functionText, imageUrl, useCase, queryAnalysis, queryText } = useMemo(() => ({
         title: solution?.solution?.Title || "Untitled Inspiration",

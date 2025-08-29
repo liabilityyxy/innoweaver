@@ -1,0 +1,84 @@
+论文数据结构分析结果
+==================================================
+
+总文档数: 2399
+不同结构数: 13
+
+结构 1:
+  字段组合: _id filename text_analysis
+  文档数量: 1091
+  占比: 45.48%
+  字段数量: 3
+--------------------------------------------------
+结构 2:
+  字段组合: Artifact Knowledge Author Cited DOI Keywords Results Second Extraction Series Target Definition Title _id
+  文档数量: 325
+  占比: 13.55%
+  字段数量: 11
+--------------------------------------------------
+结构 3:
+  字段组合: Artifact Knowledge Author Cited DOI Keywords Liked Results Second Extraction Series Target Definition Title _id
+  文档数量: 317
+  占比: 13.21%
+  字段数量: 12
+--------------------------------------------------
+结构 4:
+  字段组合: Cited _id filename text_analysis
+  文档数量: 283
+  占比: 11.80%
+  字段数量: 4
+--------------------------------------------------
+结构 5:
+  字段组合: Artifact Knowledge Cited Results Second Extraction Target Definition _id
+  文档数量: 190
+  占比: 7.92%
+  字段数量: 6
+--------------------------------------------------
+结构 6:
+  字段组合: Artifact Knowledge Cited Liked Results Second Extraction Target Definition _id
+  文档数量: 103
+  占比: 4.29%
+  字段数量: 7
+--------------------------------------------------
+结构 7:
+  字段组合: Cited Contributions Results Second Extraction Target Definition _id
+  文档数量: 58
+  占比: 2.42%
+  字段数量: 6
+--------------------------------------------------
+结构 8:
+  字段组合: Cited Contributions Liked Results Second Extraction Target Definition _id
+  文档数量: 27
+  占比: 1.13%
+  字段数量: 7
+--------------------------------------------------
+结构 9:
+  字段组合: Architecture or framework Artifact Knowledge Cited Function Implementation Performance Second Extraction Supporting knowledge Target Definition Tool or tool kits User feedback _id
+  文档数量: 1
+  占比: 0.04%
+  字段数量: 12
+--------------------------------------------------
+结构 10:
+  字段组合: Artifact Knowledge Cited Embedded knowledge Function Implementation Liked Performance Second Extraction Supporting knowledge Target Definition User feedback _id
+  文档数量: 1
+  占比: 0.04%
+  字段数量: 12
+--------------------------------------------------
+结构 11:
+  字段组合: Author Cited DOI Keywords Series Title _id error
+  文档数量: 1
+  占比: 0.04%
+  字段数量: 8
+--------------------------------------------------
+结构 12:
+  字段组合: Cited DOI _id extracted_info filename
+  文档数量: 1
+  占比: 0.04%
+  字段数量: 5
+--------------------------------------------------
+结构 13:
+  字段组合: Author Cited DOI Keywords Liked Series Title _id error raw_content
+  文档数量: 1
+  占比: 0.04%
+  字段数量: 10
+--------------------------------------------------

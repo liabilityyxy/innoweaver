@@ -1,0 +1,100 @@
+ 1888  curl -X PATCH 'http://localhost:7700/indexes/user_id/settings'   -H 'Content-Type: application/json'   -d @user_id_settings.json
+ 1889  head -20 paper_id_settings.json
+ 1890  echo "---"
+ 1891  head -20 solution_id_settings.json
+ 1892  curl -X POST 'http://localhost:7700/indexes/paper_id/documents'   -H 'Content-Type: application/json'   -d @paper_id_documents.json
+ 1893  curl -X POST 'http://localhost:7700/indexes/solution_id/documents'   -H 'Content-Type: application/json'   -d @solution_id_documents.json
+ 1894  curl -X POST 'http://localhost:7700/indexes/user_id/documents'   -H 'Content-Type: application/json'   -d @user_id_documents.json
+ 1895  # 检查索引状态
+ 1896  curl -X GET 'http://localhost:7700/indexes'
+ 1897  # 检查文档数量
+ 1898  curl -X GET 'http://localhost:7700/indexes/paper_id/stats'
+ 1899  curl -X GET 'http://localhost:7700/indexes/solution_id/stats' 
+ 1900  curl -X GET 'http://localhost:7700/indexes/user_id/stats'
+ 1901  # 查看任务状态
+ 1902  curl -X GET 'http://localhost:7700/tasks?indexUids=paper_id,solution_id,user_id'
+ 1903  # 或者查看具体任务
+ 1904  curl -X GET 'http://localhost:7700/tasks/3'
+ 1905  curl -X GET 'http://localhost:7700/tasks/4' 
+ 1906  curl -X GET 'http://localhost:7700/tasks/5'
+ 1907  # 查看文档文件的开头，确认格式
+ 1908  head -5 paper_id_documents.json
+ 1909  echo "---"
+ 1910  head -5 solution_id_documents.json
+ 1911  # 1. 停止当前服务
+ 1912  sudo systemctl stop meilisearch
+ 1913  # 2. 恢复原始的 1.11.1 数据
+ 1914  rm -rf /root/meilisearch
+ 1915  cp -r /root/meilisearch_old /root/meilisearch
+ 1916  # 3. 启动 1.11.1 版本
+ 1917  sudo systemctl start meilisearch
+ 1918  # 4. 验证原始数据恢复成功
+ 1919  sleep 3
+ 1920  curl -X GET 'http://localhost:7700/version'
+ 1921  curl -X GET 'http://localhost:7700/indexes'
+ 1922  curl -X GET 'http://localhost:7700/indexes/paper_id/stats'
+ 1923  cd interface
+ 1924  pnpm pm2 start npm --name "chi2025" -- start
+ 1925  pnpm pm2 save --force
+ 1926  m
+ 1927  mv /root/innoweaver---chi2025/meilisearch-v1.19.1 /root/meilisearch-v1.19.1
+ 1928  ls
+ 1929  cd ..
+ 1930  ls -l
+ 1931  cd meilisearch
+ 1932  ./meilisearch --dump-dir ./dump create-dump
+ 1933  curl -X POST 'http://127.0.0.1:7700/dumps'
+ 1934  curl 'http://127.0.0.1:7700/dumps/5627'
+ 1935  curl 'http://127.0.0.1:7700/tasks/5627'
+ 1936  ls -l ~/meilisearch/dumps/
+ 1937  cd ..
+ 1938  ls
+ 1939  sudo systemctl stop meilisearch
+ 1940  sudo systemctl status meilisearch
+ 1941  cp -r ~/meilisearch ~/meilisearch-backup-1.11.1
+ 1942  ls
+ 1943  rm -rf meilisearch-backup-1.11.1
+ 1944  mv ~/meilisearch ~/meilisearch-v1.11.1-backup
+ 1945  ls
+ 1946  mv ~/meilisearch-v1.19.1 ~/meilisearch
+ 1947  chmod +x ~/meilisearch/meilisearch
+ 1948  ls
+ 1949  ls -la ~/meilisearch
+ 1950  chmod +x ~/meilisearch
+ 1951  sudo systemctl start meilisearch
+ 1952  sudo systemctl status meilisearch
+ 1953  mv ~/meilisearch ~/meilisearch-binary
+ 1954  mkdir ~/meilisearch
+ 1955  mv ~/meilisearch-binary ~/meilisearch/meilisearch
+ 1956  ls
+ 1957  chmod +x ~/meilisearch/meilisearch
+ 1958  sudo systemctl start meilisearch
+ 1959  sudo systemctl status meilisearch
+ 1960  ls meilisearch-v1.11.1-backup/dumps
+ 1961  sudo systemctl stop meilisearch
+ 1962  ~/meilisearch/meilisearch --import-dump ~/meilisearch-v1.11.1-backup/dumps/20250829-055144726.dump
+ 1963  sudo systemctl start meilisearch
+ 1964  sudo systemctl status meilisearch
+ 1965  curl http://localhost:7700/indexes
+ 1966  curl http://localhost:7700/indexes/paper_id/stats
+ 1967  curl http://localhost:7700/indexes/user_id/stats  
+ 1968  curl http://localhost:7700/indexes/solution_id/stats
+ 1969  ls -la ~/meilisearch-v1.11.1-backup/
+ 1970  sudo systemctl stop meilisearch
+ 1971  rm -rf /root/meilisearch/data.ms
+ 1972  cp -r /root/meilisearch-v1.11.1-backup/data.ms /root/meilisearch/data.ms
+ 1973  sudo systemctl start meilisearch
+ 1974  sudo systemctl status meilisearch
+ 1975  sudo systemctl stop meilisearch
+ 1976  rm -rf /root/meilisearch/data.ms
+ 1977  ~/meilisearch/meilisearch --import-dump ~/meilisearch-v1.11.1-backup/dumps/20250829-055144726.dump --db-path /root/meilisearch/data.ms
+ 1978  sudo systemctl start meilisearch
+ 1979  curl http://localhost:7700/indexes
+ 1980  curl http://localhost:7700/indexes/paper_id/stats
+ 1981  curl http://localhost:7700/indexes/user_id/stats
+ 1982  curl http://localhost:7700/indexes/solution_id/stats
+ 1983  cd ..
+ 1984  ls
+ 1985  cd ..
+ 1986  ls
+ 1987  history 100 > output.txt

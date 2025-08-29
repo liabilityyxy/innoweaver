@@ -89,16 +89,18 @@ async def rag_node(state: ResearchState):
     # print("rag_node")
     query = state["query"]
     query_analysis_result = state["query_analysis_result"]
-    rag_results = RAG.search_in_meilisearch(
-        query, query_analysis_result.get("Requirement", "")
-    )
+    # rag_results = RAG.search_in_meilisearch(
+    #     query, query_analysis_result.get("Requirement", "")
+    # )
+    rag_results = await RAG.hybrid_search(query, query_analysis_result.get("Requirement", ""))
 
     state["progress"] = 30
     state["status"] = "RAG search completed"
-    state["domain_knowledge"] = rag_results.get("hits", [])
+    # hybrid_search returns a list directly, wrap it in the expected format
+    state["domain_knowledge"] = {"hits": rag_results}
 
     # Send node completion event
-    await state["send_event"]("node_complete", {"node": "rag", "result": rag_results})
+    await state["send_event"]("node_complete", {"node": "rag", "result": {"hits": rag_results}})
 
     return state
 
@@ -328,6 +330,7 @@ async def persistence_node(state: ResearchState):
         solution_ids = await TASK.insert_solution(
             state["current_user"], query, query_analysis_result, final_solution
         )
+        print(f"Solution IDs from database: {solution_ids}")
         await TASK.paper_cited(domain_knowledge, solution_ids)
 
         # Get saved solutions

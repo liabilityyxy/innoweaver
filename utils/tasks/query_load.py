@@ -1,7 +1,7 @@
 import json
 from bson.objectid import ObjectId
 from typing import List
-from utils.redis import async_redis
+# from utils.redis import async_redis
 from utils.db import (
     solutions_collection, papers_collection,
     solutions_liked_collection, papers_cited_collection
@@ -46,19 +46,25 @@ async def query_liked_solution(user_id: str, solution_ids: List[str]):
 
 async def query_paper(paper_id: str):
     paper = None
-    cache_key = f"paper:{paper_id}"
-    cached_result = await async_redis.get(cache_key)
-    if cached_result:
-        paper = json.loads(cached_result)
-    # Not in cache, read from database
-    else:
-        paper = await papers_collection.find_one({'_id': ObjectId(paper_id)})
-        if(paper):
-            paper['id'] = str(paper['_id'])
-            del paper['_id']
-    # Update to cache
+    # cache_key = f"paper:{paper_id}"
+    # cached_result = await async_redis.get(cache_key)
+    # if cached_result:
+    #     paper = json.loads(cached_result)
+    # # Not in cache, read from database
+    # else:
+    #     paper = await papers_collection.find_one({'_id': ObjectId(paper_id)})
+    #     if(paper):
+    #         paper['id'] = str(paper['_id'])
+    #         del paper['_id']
+    # # Update to cache
+    # if(paper):
+    #     await async_redis.setex(cache_key, 3600, json.dumps(paper))
+
+    # Redis disabled - read directly from database
+    paper = await papers_collection.find_one({'_id': ObjectId(paper_id)})
     if(paper):
-        await async_redis.setex(cache_key, 3600, json.dumps(paper))
+        paper['id'] = str(paper['_id'])
+        del paper['_id']
     return paper
 
 ## Load ########################################################################

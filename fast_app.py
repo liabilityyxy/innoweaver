@@ -110,8 +110,8 @@ if __name__ == "__main__":
         "fast_app:app",
         host="0.0.0.0",
         port=5000,
-        reload=True,  # Enable hot reload in development mode
-        # reload=False,
-        # workers=4     # Production environment can adjust worker count
-        workers=1
+        # reload=True,  # Enable hot reload in development mode
+        reload=False,
+        workers=4     # Production environment can adjust worker count
+        # workers=1
     ) 

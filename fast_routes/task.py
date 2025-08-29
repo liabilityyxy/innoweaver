@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 from utils.auth_utils import fastapi_token_required, fastapi_validate_input
 from utils.rate_limiter import rate_limit_dependency
 import utils.tasks as USER
-from utils.redis import redis_client, async_redis
+# from utils.redis import redis_client, async_redis
 from pydantic import BaseModel
 from .utils import route_handler
 import json

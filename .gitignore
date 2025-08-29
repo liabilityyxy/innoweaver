@@ -172,3 +172,4 @@ cython_debug/
 
 token
 .kiro/
+chroma_db/

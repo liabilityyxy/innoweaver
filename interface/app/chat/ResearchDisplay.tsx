@@ -496,10 +496,10 @@ const ResearchDisplay: React.FC<ResearchDisplayProps> = ({
                 <MasonryGallery 
                   solutions={completeResult['solutions'].map((solution, index) => ({
                     ...solution,
-                    id: solution.id || `solution-${index}`
+                    id: solution.id || solution._id || solution.solution_id || `solution-${index}`
                   }))}
                   likedSolutions={completeResult['solutions'].reduce((acc, solution, index) => {
-                    acc[solution.id || `solution-${index}`] = false;
+                    acc[solution.id || solution._id || solution.solution_id || `solution-${index}`] = false;
                     return acc;
                   }, {})}
                 />

@@ -41,6 +41,7 @@
     "mammoth": "^1.9.0",
     "masonry-layout": "^4.2.2",
     "meilisearch": "^0.44.1",
+    "motion": "^12.23.12",
     "next": "14.2.7",
     "next-themes": "^0.2.1",
     "pdf-parse": "^1.1.1",
